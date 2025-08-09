@@ -21,7 +21,7 @@ const Layout = ({ children, currentView, onViewChange }: LayoutProps) => {
             <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
               <BarChart3 className="w-4 h-4 text-white" />
             </div>
-            {isExpanded && <h1 className="text-xl font-bold text-brand-blue">Syslytics</h1>}
+            {isExpanded && <h1 className="text-xl font-bold text-brand-blue">Metrx</h1>}
           </div>
         </div>
         
