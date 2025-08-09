@@ -7,7 +7,7 @@
 
 @layer base {
   :root {
-    --background: 248 250 252;
+    --background: 251 251 251;
     --foreground: 30 58 138;
 
     --card: 255 255 255;
@@ -16,16 +16,16 @@
     --popover: 255 255 255;
     --popover-foreground: 30 58 138;
 
-    --primary: 248 250 252;
+    --primary: 251 251 251;
     --primary-foreground: 30 58 138;
 
-    --secondary: 241 245 249;
+    --secondary: 248 250 252;
     --secondary-foreground: 30 58 138;
 
     --muted: 248 250 252;
     --muted-foreground: 100 116 139;
 
-    --accent: 239 246 255;
+    --accent: 248 250 252;
     --accent-foreground: 30 58 138;
 
     --destructive: 239 68 68;
@@ -58,7 +58,7 @@
     --sidebar-foreground: 30 58 138;
     --sidebar-primary: 30 58 138;
     --sidebar-primary-foreground: 255 255 255;
-    --sidebar-accent: 239 246 255;
+    --sidebar-accent: 248 250 252;
     --sidebar-accent-foreground: 30 58 138;
     --sidebar-border: 226 232 240;
     --sidebar-ring: 30 58 138;
@@ -115,6 +115,7 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    background-color: hsl(251, 251, 251) !important;
   }
 }
 
