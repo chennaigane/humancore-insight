@@ -11,9 +11,22 @@ const Index = () => {
     setCurrentView(view);
   };
 
+  const handleAddMember = (member: { name: string; email: string; role: 'admin' | 'user' }) => {
+    console.log('New member added:', member);
+    // You can add additional logic here like API calls
+  };
+
   return (
-    <Layout currentView={currentView} onViewChange={handleViewChange}>
-      {currentView === 'admin' ? <AdminDashboard /> : <UserDashboard />}
+    <Layout 
+      currentView={currentView} 
+      onViewChange={handleViewChange}
+      onAddMember={currentView === 'admin' ? handleAddMember : undefined}
+    >
+      {currentView === 'admin' ? (
+        <AdminDashboard onAddMember={handleAddMember} />
+      ) : (
+        <UserDashboard />
+      )}
     </Layout>
   );
 };

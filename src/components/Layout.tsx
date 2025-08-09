@@ -1,16 +1,23 @@
-
 import { useState } from 'react';
-import { Users, User, Settings, BarChart3 } from 'lucide-react';
+import { Users, User, Settings, BarChart3, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import AddMemberDialog from './AddMemberDialog';
 
 interface LayoutProps {
   children: React.ReactNode;
   currentView: 'admin' | 'user';
   onViewChange: (view: 'admin' | 'user') => void;
+  onAddMember?: (member: { name: string; email: string; role: 'admin' | 'user' }) => void;
 }
 
-const Layout = ({ children, currentView, onViewChange }: LayoutProps) => {
+const Layout = ({ children, currentView, onViewChange, onAddMember }: LayoutProps) => {
   const [isExpanded, setIsExpanded] = useState(true);
+
+  const handleLogout = () => {
+    // Add logout logic here
+    console.log('Logout clicked');
+    // You can add actual logout functionality here
+  };
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -43,9 +50,16 @@ const Layout = ({ children, currentView, onViewChange }: LayoutProps) => {
             <User className="w-4 h-4" />
             {isExpanded && 'User Dashboard'}
           </Button>
+
+          {/* Add Member Dialog - Only show for admin view */}
+          {currentView === 'admin' && isExpanded && onAddMember && (
+            <div className="pt-4">
+              <AddMemberDialog onAddMember={onAddMember} />
+            </div>
+          )}
         </nav>
         
-        <div className="p-4 border-t border-border">
+        <div className="p-4 border-t border-border space-y-2">
           <Button
             variant="ghost"
             size="sm"
@@ -53,6 +67,16 @@ const Layout = ({ children, currentView, onViewChange }: LayoutProps) => {
           >
             <Settings className="w-4 h-4" />
             {isExpanded && 'Settings'}
+          </Button>
+          
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`w-full justify-start gap-3 ${!isExpanded && 'px-2'} text-destructive hover:text-destructive`}
+            onClick={handleLogout}
+          >
+            <LogOut className="w-4 h-4" />
+            {isExpanded && 'Logout'}
           </Button>
         </div>
       </div>

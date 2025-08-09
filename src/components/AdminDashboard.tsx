@@ -1,4 +1,4 @@
-
+import { useState } from 'react';
 import { Users, UserCheck2, TrendingUp, Crown } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -15,7 +15,7 @@ interface TeamMember {
   role: 'admin' | 'user';
 }
 
-const teamMembers: TeamMember[] = [
+const initialTeamMembers: TeamMember[] = [
   {
     id: '1',
     name: 'Kiran',
@@ -84,7 +84,30 @@ const teamMembers: TeamMember[] = [
   }
 ];
 
-const AdminDashboard = () => {
+interface AdminDashboardProps {
+  onAddMember: (member: { name: string; email: string; role: 'admin' | 'user' }) => void;
+}
+
+const AdminDashboard = ({ onAddMember }: AdminDashboardProps) => {
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>(initialTeamMembers);
+
+  const handleAddMember = (newMember: { name: string; email: string; role: 'admin' | 'user' }) => {
+    const member: TeamMember = {
+      id: (teamMembers.length + 1).toString(),
+      name: newMember.name,
+      email: newMember.email,
+      status: 'offline',
+      activity: 'offline',
+      productivity: 0,
+      activeTime: '0h 0m',
+      productiveTime: '0h 0m',
+      role: newMember.role,
+    };
+    
+    setTeamMembers(prev => [...prev, member]);
+    onAddMember(newMember);
+  };
+
   const totalMembers = teamMembers.length;
   const onlineMembers = teamMembers.filter(m => m.status === 'active').length;
   const avgProductivity = Math.round(teamMembers.reduce((sum, m) => sum + m.productivity, 0) / totalMembers);
