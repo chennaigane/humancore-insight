@@ -1,13 +1,20 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import { useState } from 'react';
+import Layout from '@/components/Layout';
+import AdminDashboard from '@/components/AdminDashboard';
+import UserDashboard from '@/components/UserDashboard';
 
 const Index = () => {
+  const [currentView, setCurrentView] = useState<'admin' | 'user'>('admin');
+
+  const handleViewChange = (view: 'admin' | 'user') => {
+    setCurrentView(view);
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
-    </div>
+    <Layout currentView={currentView} onViewChange={handleViewChange}>
+      {currentView === 'admin' ? <AdminDashboard /> : <UserDashboard />}
+    </Layout>
   );
 };
 
