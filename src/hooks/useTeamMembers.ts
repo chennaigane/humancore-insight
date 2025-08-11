@@ -34,7 +34,20 @@ export const useTeamMembers = () => {
         return;
       }
 
-      setTeamMembers(data || []);
+      // Transform the data to match our TeamMember interface
+      const transformedData: TeamMember[] = (data || []).map(member => ({
+        id: member.id,
+        name: member.name,
+        email: member.email,
+        status: member.status as 'active' | 'offline' | 'break',
+        activity: member.activity,
+        productivity: member.productivity,
+        active_time: member.active_time,
+        productive_time: member.productive_time,
+        role: member.role as 'admin' | 'user',
+      }));
+
+      setTeamMembers(transformedData);
     } catch (error) {
       console.error('Error fetching team members:', error);
     } finally {
@@ -64,7 +77,20 @@ export const useTeamMembers = () => {
         return;
       }
 
-      setTeamMembers(prev => [...prev, data]);
+      // Transform the new member data
+      const newMember: TeamMember = {
+        id: data.id,
+        name: data.name,
+        email: data.email,
+        status: data.status as 'active' | 'offline' | 'break',
+        activity: data.activity,
+        productivity: data.productivity,
+        active_time: data.active_time,
+        productive_time: data.productive_time,
+        role: data.role as 'admin' | 'user',
+      };
+
+      setTeamMembers(prev => [...prev, newMember]);
     } catch (error) {
       console.error('Error adding team member:', error);
     }
