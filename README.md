@@ -1,11 +1,17 @@
-# Hugging Face Deployment Example
+# Employee Monitoring Dashboard
 
-This repository contains a simple app built using **Streamlit** deployed on Hugging Face Spaces.
+This application tracks employee activity during work hours. It allows managers to monitor the tasks that employees are working on, as well as the time spent on each task.
+
+## Features
+
+- **Track Tasks**: Select tasks from a dropdown list and start/stop timers.
+- **Monitor Time**: See how much time employees have spent on tasks.
+- **Dynamic Updates**: Real-time updates of time spent and activity.
 
 ## Instructions
 
 1. Clone the repository.
-2. Ensure you have all the necessary dependencies installed by running:
+2. Install the necessary dependencies:
    ```
    pip install -r requirements.txt
    ```
@@ -16,5 +22,5 @@ This repository contains a simple app built using **Streamlit** deployed on Hugg
 
 ## Notes
 
-- The app uses **Streamlit** to render a simple user interface.
-- The app can be customized to suit your needs.
+- The app uses **Streamlit** for the user interface and **Pandas** for data management.
+- The app can be customized to suit your company's specific monitoring requirements.
