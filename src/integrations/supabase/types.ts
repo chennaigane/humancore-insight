@@ -14,7 +14,78 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string | null
+          id: string
+          role: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          full_name?: string | null
+          id: string
+          role?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          id?: string
+          role?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      team_members: {
+        Row: {
+          active_time: string
+          activity: string
+          created_at: string
+          created_by: string | null
+          email: string
+          id: string
+          name: string
+          productive_time: string
+          productivity: number
+          role: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          active_time?: string
+          activity?: string
+          created_at?: string
+          created_by?: string | null
+          email: string
+          id?: string
+          name: string
+          productive_time?: string
+          productivity?: number
+          role?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          active_time?: string
+          activity?: string
+          created_at?: string
+          created_by?: string | null
+          email?: string
+          id?: string
+          name?: string
+          productive_time?: string
+          productivity?: number
+          role?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

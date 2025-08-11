@@ -2,11 +2,14 @@
 import { Activity, Clock, TrendingUp, Monitor } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/contexts/AuthContext';
 
 const UserDashboard = () => {
-  // Sample user data
+  const { user } = useAuth();
+
+  // Sample user data - in a real app, this would come from the database
   const userData = {
-    name: 'chennaiganc@gmail.com',
+    name: user?.email || 'User',
     status: 'Offline',
     todayTime: '0m',
     productivity: 0,

@@ -1,7 +1,10 @@
+
 import { useState } from 'react';
 import { Users, User, Settings, BarChart3, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
 import AddMemberDialog from './AddMemberDialog';
+import { useNavigate } from 'react-router-dom';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -12,11 +15,12 @@ interface LayoutProps {
 
 const Layout = ({ children, currentView, onViewChange, onAddMember }: LayoutProps) => {
   const [isExpanded, setIsExpanded] = useState(true);
+  const { signOut, user } = useAuth();
+  const navigate = useNavigate();
 
-  const handleLogout = () => {
-    // Add logout logic here
-    console.log('Logout clicked');
-    // You can add actual logout functionality here
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/auth');
   };
 
   return (
@@ -98,7 +102,9 @@ const Layout = ({ children, currentView, onViewChange, onAddMember }: LayoutProp
                 {currentView === 'admin' ? 'Admin Dashboard' : 'User Dashboard'}
               </div>
               <div className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center">
-                <span className="text-white text-sm font-medium">A</span>
+                <span className="text-white text-sm font-medium">
+                  {user?.email?.charAt(0).toUpperCase() || 'U'}
+                </span>
               </div>
             </div>
           </div>

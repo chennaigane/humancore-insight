@@ -1,116 +1,39 @@
-import { useState } from 'react';
+
 import { Users, UserCheck2, TrendingUp, Crown } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-
-interface TeamMember {
-  id: string;
-  name: string;
-  email: string;
-  status: 'active' | 'offline' | 'break';
-  activity: string;
-  productivity: number;
-  activeTime: string;
-  productiveTime: string;
-  role: 'admin' | 'user';
-}
-
-const initialTeamMembers: TeamMember[] = [
-  {
-    id: '1',
-    name: 'Kiran',
-    email: 'kiran@company.com',
-    status: 'active',
-    activity: 'coding',
-    productivity: 87,
-    activeTime: '7h 45m',
-    productiveTime: '6h 54m',
-    role: 'admin'
-  },
-  {
-    id: '2',
-    name: 'Ganesh',
-    email: 'ganesh@company.com',
-    status: 'active',
-    activity: 'meeting',
-    productivity: 81,
-    activeTime: '8h 30m',
-    productiveTime: '6h 54m',
-    role: 'user'
-  },
-  {
-    id: '3',
-    name: 'Raghavendra',
-    email: 'raghavendra@company.com',
-    status: 'offline',
-    activity: 'break',
-    productivity: 91,
-    activeTime: '6h 45m',
-    productiveTime: '6h 10m',
-    role: 'user'
-  },
-  {
-    id: '4',
-    name: 'Dhanashvil',
-    email: 'dhanashvil@company.com',
-    status: 'active',
-    activity: 'documentation',
-    productivity: 90,
-    activeTime: '7h 43m',
-    productiveTime: '6h 59m',
-    role: 'user'
-  },
-  {
-    id: '5',
-    name: 'Jahaeshwaran',
-    email: 'jahaeshwaran@company.com',
-    status: 'active',
-    activity: 'testing',
-    productivity: 75,
-    activeTime: '5h 45m',
-    productiveTime: '4h 19m',
-    role: 'user'
-  },
-  {
-    id: '6',
-    name: 'Janardhnavari',
-    email: 'janardhnavari@company.com',
-    status: 'offline',
-    activity: 'offline',
-    productivity: 65,
-    activeTime: '3h 46m',
-    productiveTime: '2h 30m',
-    role: 'user'
-  }
-];
+import { useTeamMembers } from '@/hooks/useTeamMembers';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface AdminDashboardProps {
   onAddMember: (member: { name: string; email: string; role: 'admin' | 'user' }) => void;
 }
 
 const AdminDashboard = ({ onAddMember }: AdminDashboardProps) => {
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>(initialTeamMembers);
+  const { teamMembers, loading, addTeamMember } = useTeamMembers();
+  const { user } = useAuth();
 
-  const handleAddMember = (newMember: { name: string; email: string; role: 'admin' | 'user' }) => {
-    const member: TeamMember = {
-      id: (teamMembers.length + 1).toString(),
-      name: newMember.name,
-      email: newMember.email,
-      status: 'offline',
-      activity: 'offline',
-      productivity: 0,
-      activeTime: '0h 0m',
-      productiveTime: '0h 0m',
-      role: newMember.role,
-    };
-    
-    setTeamMembers(prev => [...prev, member]);
+  const handleAddMember = async (newMember: { name: string; email: string; role: 'admin' | 'user' }) => {
+    await addTeamMember(newMember);
     onAddMember(newMember);
   };
 
+  if (loading) {
+    return (
+      <div className="space-y-6 animate-fade-in">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-foreground mb-2">Loading...</h1>
+          <p className="text-muted-foreground">Please wait while we load your dashboard</p>
+        </div>
+      </div>
+    );
+  }
+
   const totalMembers = teamMembers.length;
   const onlineMembers = teamMembers.filter(m => m.status === 'active').length;
-  const avgProductivity = Math.round(teamMembers.reduce((sum, m) => sum + m.productivity, 0) / totalMembers);
+  const avgProductivity = totalMembers > 0 
+    ? Math.round(teamMembers.reduce((sum, m) => sum + m.productivity, 0) / totalMembers)
+    : 0;
   const admins = teamMembers.filter(m => m.role === 'admin').length;
 
   const getStatusColor = (status: string) => {
@@ -132,7 +55,7 @@ const AdminDashboard = ({ onAddMember }: AdminDashboardProps) => {
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-foreground mb-2">Welcome, Admin</h1>
+        <h1 className="text-3xl font-bold text-foreground mb-2">Welcome, {user?.email}</h1>
         <p className="text-muted-foreground">Admin Dashboard - View and manage all team members</p>
       </div>
 
@@ -240,11 +163,11 @@ const AdminDashboard = ({ onAddMember }: AdminDashboardProps) => {
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <span className="text-muted-foreground">Active:</span>
-                    <div className="font-medium text-foreground">{member.activeTime}</div>
+                    <div className="font-medium text-foreground">{member.active_time}</div>
                   </div>
                   <div>
                     <span className="text-muted-foreground">Productive:</span>
-                    <div className="font-medium text-foreground">{member.productiveTime}</div>
+                    <div className="font-medium text-foreground">{member.productive_time}</div>
                   </div>
                 </div>
               </CardContent>
