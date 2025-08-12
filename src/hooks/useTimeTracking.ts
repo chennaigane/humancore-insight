@@ -36,7 +36,7 @@ export const useTimeTracking = () => {
     if (!user) return;
 
     try {
-      const { error } = await supabase.rpc('update_hourly_tracking', {
+      const { error } = await (supabase as any).rpc('update_hourly_tracking', {
         p_user_id: user.id,
         p_productive_mins: productiveMinutes,
         p_unproductive_mins: unproductiveMinutes,

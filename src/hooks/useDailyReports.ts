@@ -24,8 +24,9 @@ export const useDailyReports = () => {
     if (!user) return;
 
     try {
+      // Use raw query since types haven't been updated yet
       const { data, error } = await supabase
-        .from('daily_reports')
+        .from('daily_reports' as any)
         .select('*')
         .order('date', { ascending: false })
         .limit(30);
@@ -35,7 +36,7 @@ export const useDailyReports = () => {
         return;
       }
 
-      setReports(data || []);
+      setReports((data as unknown as DailyReport[]) || []);
     } catch (error) {
       console.error('Error in fetchDailyReports:', error);
     } finally {
@@ -45,7 +46,8 @@ export const useDailyReports = () => {
 
   const generateDailyReport = async (date?: string) => {
     try {
-      const { error } = await supabase.rpc('generate_daily_summary', {
+      // Use any to bypass type checking for new RPC functions
+      const { error } = await (supabase as any).rpc('generate_daily_summary', {
         p_date: date || new Date().toISOString().split('T')[0]
       });
 
