@@ -1,9 +1,12 @@
 
-import { Users, UserCheck2, TrendingUp, Crown } from 'lucide-react';
+import { Users, UserCheck2, TrendingUp, Crown, Mail, Calendar } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { useTeamMembers } from '@/hooks/useTeamMembers';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface AdminDashboardProps {
   onAddMember: (member: { name: string; email: string; role: 'admin' | 'user' }) => void;
@@ -16,6 +19,24 @@ const AdminDashboard = ({ onAddMember }: AdminDashboardProps) => {
   const handleAddMember = async (newMember: { name: string; email: string; role: 'admin' | 'user' }) => {
     await addTeamMember(newMember);
     onAddMember(newMember);
+  };
+
+  const sendDailyReports = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('send-daily-reports');
+      
+      if (error) {
+        console.error('Error sending reports:', error);
+        toast.error('Failed to send daily reports');
+        return;
+      }
+
+      toast.success('Daily reports sent successfully to all admins');
+      console.log('Reports sent:', data);
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('Failed to send daily reports');
+    }
   };
 
   if (loading) {
@@ -54,9 +75,17 @@ const AdminDashboard = ({ onAddMember }: AdminDashboardProps) => {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-foreground mb-2">Welcome, {user?.email}</h1>
-        <p className="text-muted-foreground">Admin Dashboard - View and manage all team members</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Welcome, {user?.email}</h1>
+          <p className="text-muted-foreground">Admin Dashboard - Monitor team productivity and send reports</p>
+        </div>
+        <div className="flex gap-2">
+          <Button onClick={sendDailyReports} className="gap-2">
+            <Mail className="h-4 w-4" />
+            Send Daily Reports
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -101,6 +130,32 @@ const AdminDashboard = ({ onAddMember }: AdminDashboardProps) => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Auto Tracking Info */}
+      <Card className="card-gradient border-0 shadow-lg">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="h-5 w-5" />
+            Automatic Time Tracking System
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+              <h3 className="font-medium text-green-800 mb-2">Hourly Monitoring</h3>
+              <p className="text-sm text-green-600">Employee time is automatically tracked every minute and stored hourly</p>
+            </div>
+            <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <h3 className="font-medium text-blue-800 mb-2">Daily Reports</h3>
+              <p className="text-sm text-blue-600">End-of-day productivity reports are generated and can be emailed to admins</p>
+            </div>
+            <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
+              <h3 className="font-medium text-purple-800 mb-2">Real-time Dashboard</h3>
+              <p className="text-sm text-purple-600">View team productivity metrics and individual performance in real-time</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Team Members */}
       <div>
