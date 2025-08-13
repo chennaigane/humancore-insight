@@ -59,6 +59,26 @@ export const useTeamMembers = () => {
     if (!session) return;
 
     try {
+      // First create the profile record with a generated UUID
+      const userId = crypto.randomUUID();
+      
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert([
+          {
+            id: userId,
+            email: member.email,
+            full_name: member.name,
+            role: member.role,
+          }
+        ]);
+
+      if (profileError) {
+        console.error('Error creating profile:', profileError);
+        return;
+      }
+
+      // Then create the team member record
       const { data, error } = await supabase
         .from('team_members')
         .insert([

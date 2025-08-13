@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface AddMemberDialogProps {
   onAddMember: (member: {
@@ -21,16 +22,47 @@ const AddMemberDialog = ({ onAddMember }: AddMemberDialogProps) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [role, setRole] = useState<'admin' | 'user'>('user');
+  const [loading, setLoading] = useState(false);
+  const { signUp } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (name.trim() && email.trim()) {
-      onAddMember({ name: name.trim(), email: email.trim(), role });
+    if (!name.trim() || !email.trim()) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+
+    setLoading(true);
+    
+    try {
+      // Create the account in Supabase Auth
+      const { error } = await signUp(email.trim(), 'TempPassword123!', name.trim(), role);
+      
+      if (error) {
+        toast.error(`Failed to create account: ${error.message}`);
+        setLoading(false);
+        return;
+      }
+
+      // Add to team members via the parent component
+      onAddMember({ 
+        name: name.trim(), 
+        email: email.trim(), 
+        role 
+      });
+      
+      // Reset form
       setName('');
       setEmail('');
       setRole('user');
       setOpen(false);
-      toast.success(`${role === 'admin' ? 'Admin' : 'User'} member added successfully!`);
+      
+      toast.success(`${role === 'admin' ? 'Admin' : 'User'} member added successfully! They will receive an email to confirm their account.`);
+    } catch (error) {
+      console.error('Error adding member:', error);
+      toast.error('Failed to add member. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -55,6 +87,7 @@ const AddMemberDialog = ({ onAddMember }: AddMemberDialogProps) => {
               onChange={(e) => setName(e.target.value)}
               placeholder="Enter full name"
               required
+              disabled={loading}
             />
           </div>
           <div className="space-y-2">
@@ -66,11 +99,12 @@ const AddMemberDialog = ({ onAddMember }: AddMemberDialogProps) => {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter email address"
               required
+              disabled={loading}
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="role">Access Level</Label>
-            <Select value={role} onValueChange={(value: 'admin' | 'user') => setRole(value)}>
+            <Select value={role} onValueChange={(value: 'admin' | 'user') => setRole(value)} disabled={loading}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -81,11 +115,11 @@ const AddMemberDialog = ({ onAddMember }: AddMemberDialogProps) => {
             </Select>
           </div>
           <div className="flex justify-end space-x-2">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={loading}>
               Cancel
             </Button>
-            <Button type="submit">
-              Add Member
+            <Button type="submit" disabled={loading}>
+              {loading ? 'Adding...' : 'Add Member'}
             </Button>
           </div>
         </form>
