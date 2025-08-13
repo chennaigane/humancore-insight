@@ -8,13 +8,14 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { BarChart3 } from 'lucide-react';
+import { BarChart3, Shield, User } from 'lucide-react';
 
 const Auth = () => {
   const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [activeLoginType, setActiveLoginType] = useState<'user' | 'admin'>('user');
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -25,7 +26,7 @@ const Auth = () => {
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
 
-    const { error } = await signIn(email, password);
+    const { error } = await signIn(email, password, activeLoginType);
     
     if (error) {
       setError(error.message);
@@ -46,7 +47,7 @@ const Auth = () => {
     const password = formData.get('password') as string;
     const fullName = formData.get('fullName') as string;
 
-    const { error } = await signUp(email, password, fullName);
+    const { error } = await signUp(email, password, fullName, activeLoginType);
     
     if (error) {
       setError(error.message);
@@ -70,6 +71,32 @@ const Auth = () => {
           <CardTitle>Welcome to Metrx</CardTitle>
         </CardHeader>
         <CardContent>
+          {/* Login Type Selection */}
+          <div className="mb-6">
+            <div className="grid grid-cols-2 gap-2 p-1 bg-muted rounded-lg">
+              <Button
+                type="button"
+                variant={activeLoginType === 'user' ? 'default' : 'ghost'}
+                size="sm"
+                className="flex items-center gap-2"
+                onClick={() => setActiveLoginType('user')}
+              >
+                <User className="w-4 h-4" />
+                User Login
+              </Button>
+              <Button
+                type="button"
+                variant={activeLoginType === 'admin' ? 'default' : 'ghost'}
+                size="sm"
+                className="flex items-center gap-2"
+                onClick={() => setActiveLoginType('admin')}
+              >
+                <Shield className="w-4 h-4" />
+                Admin Login
+              </Button>
+            </div>
+          </div>
+
           <Tabs defaultValue="signin" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="signin">Sign In</TabsTrigger>
@@ -85,12 +112,14 @@ const Auth = () => {
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signin-email">Email</Label>
+                  <Label htmlFor="signin-email">
+                    {activeLoginType === 'admin' ? 'Admin Email' : 'User Email'}
+                  </Label>
                   <Input
                     id="signin-email"
                     name="email"
                     type="email"
-                    placeholder="Enter your email"
+                    placeholder={`Enter your ${activeLoginType} email`}
                     required
                   />
                 </div>
@@ -105,7 +134,7 @@ const Auth = () => {
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? 'Signing in...' : 'Sign In'}
+                  {loading ? 'Signing in...' : `Sign In as ${activeLoginType === 'admin' ? 'Admin' : 'User'}`}
                 </Button>
               </form>
             </TabsContent>
@@ -123,12 +152,14 @@ const Auth = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email</Label>
+                  <Label htmlFor="signup-email">
+                    {activeLoginType === 'admin' ? 'Admin Email' : 'User Email'}
+                  </Label>
                   <Input
                     id="signup-email"
                     name="email"
                     type="email"
-                    placeholder="Enter your email"
+                    placeholder={`Enter your ${activeLoginType} email`}
                     required
                   />
                 </div>
@@ -143,7 +174,7 @@ const Auth = () => {
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? 'Creating account...' : 'Sign Up'}
+                  {loading ? 'Creating account...' : `Sign Up as ${activeLoginType === 'admin' ? 'Admin' : 'User'}`}
                 </Button>
               </form>
             </TabsContent>

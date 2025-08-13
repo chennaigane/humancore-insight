@@ -7,8 +7,7 @@ import AdminDashboard from '@/components/AdminDashboard';
 import UserDashboard from '@/components/UserDashboard';
 
 const Index = () => {
-  const [currentView, setCurrentView] = useState<'admin' | 'user'>('admin');
-  const { user, loading } = useAuth();
+  const { user, userRole, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -16,10 +15,6 @@ const Index = () => {
       navigate('/auth');
     }
   }, [user, loading, navigate]);
-
-  const handleViewChange = (view: 'admin' | 'user') => {
-    setCurrentView(view);
-  };
 
   const handleAddMember = (member: { name: string; email: string; role: 'admin' | 'user' }) => {
     console.log('New member added:', member);
@@ -40,13 +35,17 @@ const Index = () => {
     return null; // Will redirect to auth
   }
 
+  // Determine view based on user role
+  const currentView = userRole === 'admin' ? 'admin' : 'user';
+
   return (
     <Layout 
       currentView={currentView} 
-      onViewChange={handleViewChange}
-      onAddMember={currentView === 'admin' ? handleAddMember : undefined}
+      onViewChange={() => {}} // Disable view switching - role determines view
+      onAddMember={userRole === 'admin' ? handleAddMember : undefined}
+      userRole={userRole}
     >
-      {currentView === 'admin' ? (
+      {userRole === 'admin' ? (
         <AdminDashboard onAddMember={handleAddMember} />
       ) : (
         <UserDashboard />

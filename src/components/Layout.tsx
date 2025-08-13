@@ -11,9 +11,10 @@ interface LayoutProps {
   currentView: 'admin' | 'user';
   onViewChange: (view: 'admin' | 'user') => void;
   onAddMember?: (member: { name: string; email: string; role: 'admin' | 'user' }) => void;
+  userRole: 'admin' | 'user' | null;
 }
 
-const Layout = ({ children, currentView, onViewChange, onAddMember }: LayoutProps) => {
+const Layout = ({ children, currentView, onAddMember, userRole }: LayoutProps) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const { signOut, user } = useAuth();
   const navigate = useNavigate();
@@ -32,31 +33,38 @@ const Layout = ({ children, currentView, onViewChange, onAddMember }: LayoutProp
             <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
               <BarChart3 className="w-4 h-4 text-white" />
             </div>
-            {isExpanded && <h1 className="text-xl font-bold text-brand-blue">Metrx</h1>}
+            {isExpanded && (
+              <div>
+                <h1 className="text-xl font-bold text-brand-blue">Metrx</h1>
+                <p className="text-xs text-muted-foreground capitalize">{userRole} Portal</p>
+              </div>
+            )}
           </div>
         </div>
         
         <nav className="flex-1 p-4 space-y-2">
-          <Button
-            variant={currentView === 'admin' ? 'default' : 'ghost'}
-            className={`w-full justify-start gap-3 ${!isExpanded && 'px-2'}`}
-            onClick={() => onViewChange('admin')}
-          >
-            <Users className="w-4 h-4" />
-            {isExpanded && 'Admin Dashboard'}
-          </Button>
-          
-          <Button
-            variant={currentView === 'user' ? 'default' : 'ghost'}
-            className={`w-full justify-start gap-3 ${!isExpanded && 'px-2'}`}
-            onClick={() => onViewChange('user')}
-          >
-            <User className="w-4 h-4" />
-            {isExpanded && 'User Dashboard'}
-          </Button>
+          {userRole === 'admin' ? (
+            <Button
+              variant="default"
+              className={`w-full justify-start gap-3 ${!isExpanded && 'px-2'}`}
+              disabled
+            >
+              <Users className="w-4 h-4" />
+              {isExpanded && 'Admin Dashboard'}
+            </Button>
+          ) : (
+            <Button
+              variant="default"
+              className={`w-full justify-start gap-3 ${!isExpanded && 'px-2'}`}
+              disabled
+            >
+              <User className="w-4 h-4" />
+              {isExpanded && 'User Dashboard'}
+            </Button>
+          )}
 
-          {/* Add Member Dialog - Only show for admin view */}
-          {currentView === 'admin' && isExpanded && onAddMember && (
+          {/* Add Member Dialog - Only show for admin */}
+          {userRole === 'admin' && isExpanded && onAddMember && (
             <div className="pt-4">
               <AddMemberDialog onAddMember={onAddMember} />
             </div>
@@ -99,7 +107,7 @@ const Layout = ({ children, currentView, onViewChange, onAddMember }: LayoutProp
             
             <div className="flex items-center gap-4">
               <div className="text-sm text-muted-foreground">
-                {currentView === 'admin' ? 'Admin Dashboard' : 'User Dashboard'}
+                {userRole === 'admin' ? 'Admin Dashboard' : 'User Dashboard'}
               </div>
               <div className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center">
                 <span className="text-white text-sm font-medium">
