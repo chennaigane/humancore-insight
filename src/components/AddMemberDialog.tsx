@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { UserPlus } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface AddMemberDialogProps {
   onAddMember: (member: {
@@ -29,6 +30,7 @@ const AddMemberDialog = ({ onAddMember }: AddMemberDialogProps) => {
       setEmail('');
       setRole('user');
       setOpen(false);
+      toast.success(`${role === 'admin' ? 'Admin' : 'User'} member added successfully!`);
     }
   };
 
@@ -37,7 +39,7 @@ const AddMemberDialog = ({ onAddMember }: AddMemberDialogProps) => {
       <DialogTrigger asChild>
         <Button className="w-full gap-2">
           <UserPlus className="w-4 h-4" />
-          Add Member
+          Add Team Member
         </Button>
       </DialogTrigger>
       <DialogContent>
@@ -46,7 +48,7 @@ const AddMemberDialog = ({ onAddMember }: AddMemberDialogProps) => {
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
+            <Label htmlFor="name">Full Name</Label>
             <Input
               id="name"
               value={name}
@@ -56,7 +58,7 @@ const AddMemberDialog = ({ onAddMember }: AddMemberDialogProps) => {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">Email Address</Label>
             <Input
               id="email"
               type="email"
@@ -67,14 +69,14 @@ const AddMemberDialog = ({ onAddMember }: AddMemberDialogProps) => {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="role">Role</Label>
+            <Label htmlFor="role">Access Level</Label>
             <Select value={role} onValueChange={(value: 'admin' | 'user') => setRole(value)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="user">User</SelectItem>
-                <SelectItem value="admin">Admin</SelectItem>
+                <SelectItem value="user">User Access</SelectItem>
+                <SelectItem value="admin">Admin Access</SelectItem>
               </SelectContent>
             </Select>
           </div>
