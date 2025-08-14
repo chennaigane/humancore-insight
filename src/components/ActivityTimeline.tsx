@@ -40,19 +40,6 @@ const ActivityTimeline = ({ sessionId }: ActivityTimelineProps) => {
     }
   };
 
-  const getActivityColor = (category: any) => {
-    if (!category) return 'bg-gray-500';
-    
-    switch (category.productivity) {
-      case 'PRODUCTIVE':
-        return 'bg-green-500';
-      case 'UNPRODUCTIVE':
-        return 'bg-red-500';
-      default:
-        return 'bg-yellow-500';
-    }
-  };
-
   const formatDuration = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
@@ -95,11 +82,9 @@ const ActivityTimeline = ({ sessionId }: ActivityTimelineProps) => {
           ) : (
             <div className="space-y-3">
               {activities.map((activity, index) => {
-                const category = (activity as any).categories;
-                
                 return (
                   <div key={activity.id} className="flex items-start gap-3 p-3 rounded-lg border">
-                    <div className={`w-2 h-2 rounded-full mt-2 ${getActivityColor(category)}`} />
+                    <div className="w-2 h-2 rounded-full mt-2 bg-blue-500" />
                     
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
@@ -129,18 +114,9 @@ const ActivityTimeline = ({ sessionId }: ActivityTimelineProps) => {
                       
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <span>{new Date(activity.start_time).toLocaleTimeString()}</span>
-                        {category && (
-                          <Badge 
-                            variant="secondary" 
-                            className={`text-xs ${
-                              category.productivity === 'PRODUCTIVE' ? 'bg-green-100 text-green-800' :
-                              category.productivity === 'UNPRODUCTIVE' ? 'bg-red-100 text-red-800' :
-                              'bg-yellow-100 text-yellow-800'
-                            }`}
-                          >
-                            {category.name}
-                          </Badge>
-                        )}
+                        <Badge variant="secondary" className="text-xs">
+                          {activity.activity_type}
+                        </Badge>
                       </div>
                     </div>
                   </div>

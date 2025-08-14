@@ -32,14 +32,7 @@ export const useActivityEvents = (sessionId?: string) => {
     try {
       let query = supabase
         .from('activity_events' as any)
-        .select(`
-          *,
-          categories (
-            name,
-            productivity,
-            color
-          )
-        `)
+        .select('*')
         .order('start_time', { ascending: false });
 
       if (filters?.sessionId) {
@@ -61,7 +54,7 @@ export const useActivityEvents = (sessionId?: string) => {
         return;
       }
 
-      setActivities(data || []);
+      setActivities((data as ActivityEvent[]) || []);
     } catch (error) {
       console.error('Error in fetchActivities:', error);
     } finally {
@@ -85,9 +78,13 @@ export const useActivityEvents = (sessionId?: string) => {
         return null;
       }
 
-      // Add to local state
-      setActivities(prev => [data, ...prev]);
-      return data;
+      if (data) {
+        // Add to local state
+        setActivities(prev => [data as ActivityEvent, ...prev]);
+        return data as ActivityEvent;
+      }
+      
+      return null;
     } catch (error) {
       console.error('Error in addActivityEvent:', error);
       return null;
@@ -122,23 +119,8 @@ export const useActivityEvents = (sessionId?: string) => {
           break;
         default:
           summary.totalActiveTime += duration;
-
-          // Categorize by productivity
-          const category = (activity as any).categories;
-          if (category) {
-            switch (category.productivity) {
-              case 'PRODUCTIVE':
-                summary.productiveTime += duration;
-                break;
-              case 'UNPRODUCTIVE':
-                summary.unproductiveTime += duration;
-                break;
-              default:
-                summary.neutralTime += duration;
-            }
-          } else {
-            summary.neutralTime += duration;
-          }
+          // For now, treat all active time as neutral since we don't have categories yet
+          summary.neutralTime += duration;
 
           // Track app usage
           if (activity.app_name) {

@@ -56,11 +56,15 @@ export const useWorkSession = () => {
         return null;
       }
 
-      setCurrentSession(data);
-      setIsTracking(true);
-      setSessionStartTime(new Date());
-      console.log('Work session started:', data.id);
-      return data;
+      if (data) {
+        setCurrentSession(data as WorkSession);
+        setIsTracking(true);
+        setSessionStartTime(new Date());
+        console.log('Work session started:', data.id);
+        return data as WorkSession;
+      }
+      
+      return null;
     } catch (error) {
       console.error('Error in startSession:', error);
       return null;
@@ -115,7 +119,7 @@ export const useWorkSession = () => {
         }
 
         if (data) {
-          setCurrentSession(data);
+          setCurrentSession(data as WorkSession);
           setIsTracking(true);
           setSessionStartTime(new Date(data.start_time));
           console.log('Found active session:', data.id);

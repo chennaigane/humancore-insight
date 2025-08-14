@@ -16,9 +16,9 @@ const Index = () => {
     }
   }, [user, loading, navigate]);
 
-  // Redirect employees to time tracking page
+  // Redirect regular users to time tracking page
   useEffect(() => {
-    if (userRole === 'employee' && user) {
+    if (userRole === 'user' && user) {
       navigate('/time-tracking');
     }
   }, [userRole, user, navigate]);
@@ -43,7 +43,7 @@ const Index = () => {
   }
 
   // Determine view based on user role
-  const currentView = userRole === 'admin' ? 'admin' : userRole === 'manager' ? 'manager' : 'user';
+  const currentView = userRole === 'admin' ? 'admin' : 'user';
 
   return (
     <Layout 
