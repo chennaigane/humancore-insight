@@ -40,7 +40,7 @@ export const useWorkSession = () => {
 
     try {
       const { data, error } = await supabase
-        .from('work_sessions')
+        .from('work_sessions' as any)
         .insert([
           {
             user_id: user.id,
@@ -73,7 +73,7 @@ export const useWorkSession = () => {
 
     try {
       const { error } = await supabase
-        .from('work_sessions')
+        .from('work_sessions' as any)
         .update({
           end_time: new Date().toISOString(),
           is_active: false,
@@ -101,7 +101,7 @@ export const useWorkSession = () => {
 
       try {
         const { data, error } = await supabase
-          .from('work_sessions')
+          .from('work_sessions' as any)
           .select('*')
           .eq('user_id', user.id)
           .eq('is_active', true)

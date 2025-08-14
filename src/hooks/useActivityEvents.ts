@@ -31,7 +31,7 @@ export const useActivityEvents = (sessionId?: string) => {
     setLoading(true);
     try {
       let query = supabase
-        .from('activity_events')
+        .from('activity_events' as any)
         .select(`
           *,
           categories (
@@ -75,7 +75,7 @@ export const useActivityEvents = (sessionId?: string) => {
 
     try {
       const { data, error } = await supabase
-        .from('activity_events')
+        .from('activity_events' as any)
         .insert([activity])
         .select()
         .single();
