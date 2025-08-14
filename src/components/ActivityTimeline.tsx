@@ -1,27 +1,32 @@
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Clock, Monitor, Globe, Coffee, Pause } from 'lucide-react';
-import { useActivityEvents, ActivityEvent } from '@/hooks/useActivityEvents';
-import { formatDistanceStrict } from 'date-fns';
+import { useActivityEvents } from '@/hooks/useActivityEvents';
 
 interface ActivityTimelineProps {
   sessionId?: string;
-  startDate?: string;
-  endDate?: string;
 }
 
-const ActivityTimeline = ({ sessionId, startDate, endDate }: ActivityTimelineProps) => {
+const ActivityTimeline = ({ sessionId }: ActivityTimelineProps) => {
   const { activities, loading, fetchActivities } = useActivityEvents();
 
   useEffect(() => {
-    fetchActivities({ sessionId, startDate, endDate });
-  }, [sessionId, startDate, endDate, fetchActivities]);
+    if (sessionId) {
+      fetchActivities({ sessionId });
+    } else {
+      // Fetch today's activities
+      const today = new Date();
+      const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString();
+      const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59).toISOString();
+      fetchActivities({ startDate: startOfDay, endDate: endOfDay });
+    }
+  }, [sessionId, fetchActivities]);
 
-  const getActivityIcon = (activity: ActivityEvent) => {
-    switch (activity.activity_type) {
+  const getActivityIcon = (type: string) => {
+    switch (type) {
       case 'APP':
         return <Monitor className="w-4 h-4" />;
       case 'WEBSITE':
@@ -35,54 +40,27 @@ const ActivityTimeline = ({ sessionId, startDate, endDate }: ActivityTimelinePro
     }
   };
 
-  const getActivityColor = (activity: ActivityEvent) => {
-    const category = (activity as any).categories;
-    if (category) {
-      switch (category.productivity) {
-        case 'PRODUCTIVE':
-          return 'bg-green-100 text-green-800 border-green-200';
-        case 'UNPRODUCTIVE':
-          return 'bg-red-100 text-red-800 border-red-200';
-        default:
-          return 'bg-blue-100 text-blue-800 border-blue-200';
-      }
-    }
+  const getActivityColor = (category: any) => {
+    if (!category) return 'bg-gray-500';
     
-    switch (activity.activity_type) {
-      case 'IDLE':
-        return 'bg-gray-100 text-gray-800 border-gray-200';
-      case 'PAUSE':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+    switch (category.productivity) {
+      case 'PRODUCTIVE':
+        return 'bg-green-500';
+      case 'UNPRODUCTIVE':
+        return 'bg-red-500';
       default:
-        return 'bg-blue-100 text-blue-800 border-blue-200';
+        return 'bg-yellow-500';
     }
   };
 
   const formatDuration = (seconds: number) => {
-    if (seconds < 60) return `${seconds}s`;
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    if (minutes < 60) {
-      return remainingSeconds > 0 ? `${minutes}m ${remainingSeconds}s` : `${minutes}m`;
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
     }
-    const hours = Math.floor(minutes / 60);
-    const remainingMinutes = minutes % 60;
-    return `${hours}h ${remainingMinutes}m`;
-  };
-
-  const getActivityTitle = (activity: ActivityEvent) => {
-    if (activity.activity_type === 'IDLE') return 'Idle Time';
-    if (activity.activity_type === 'PAUSE') return 'Break Time';
-    if (activity.app_name) return activity.app_name;
-    if (activity.url_domain) return activity.url_domain;
-    return 'Unknown Activity';
-  };
-
-  const getActivitySubtitle = (activity: ActivityEvent) => {
-    if (activity.window_title) return activity.window_title;
-    if (activity.url_path && activity.url_path !== '/') return activity.url_path;
-    if (activity.process_name) return activity.process_name;
-    return null;
+    return `${minutes}m`;
   };
 
   if (loading) {
@@ -92,8 +70,8 @@ const ActivityTimeline = ({ sessionId, startDate, endDate }: ActivityTimelinePro
           <CardTitle>Activity Timeline</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8 text-muted-foreground">
-            Loading activities...
+          <div className="flex items-center justify-center h-32">
+            <div className="text-muted-foreground">Loading activities...</div>
           </div>
         </CardContent>
       </Card>
@@ -106,51 +84,68 @@ const ActivityTimeline = ({ sessionId, startDate, endDate }: ActivityTimelinePro
         <CardTitle>Activity Timeline</CardTitle>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-96 pr-4">
+        <ScrollArea className="h-96">
           {activities.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              No activities recorded yet
+            <div className="flex items-center justify-center h-32">
+              <div className="text-center text-muted-foreground">
+                <Clock className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                <p>No activities recorded yet</p>
+              </div>
             </div>
           ) : (
             <div className="space-y-3">
-              {activities.map((activity) => (
-                <div key={activity.id} className="flex items-start gap-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
-                  <div className="flex-shrink-0 mt-1">
-                    {getActivityIcon(activity)}
-                  </div>
-                  
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h4 className="font-medium text-sm truncate">
-                        {getActivityTitle(activity)}
-                      </h4>
-                      <Badge className={`text-xs ${getActivityColor(activity)}`}>
-                        {formatDuration(activity.duration_seconds)}
-                      </Badge>
-                    </div>
+              {activities.map((activity, index) => {
+                const category = (activity as any).categories;
+                
+                return (
+                  <div key={activity.id} className="flex items-start gap-3 p-3 rounded-lg border">
+                    <div className={`w-2 h-2 rounded-full mt-2 ${getActivityColor(category)}`} />
                     
-                    {getActivitySubtitle(activity) && (
-                      <p className="text-xs text-muted-foreground truncate mb-1">
-                        {getActivitySubtitle(activity)}
-                      </p>
-                    )}
-                    
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <span>
-                        {new Date(activity.start_time).toLocaleTimeString()}
-                      </span>
-                      {activity.end_time && (
-                        <>
-                          <span>→</span>
-                          <span>
-                            {new Date(activity.end_time).toLocaleTimeString()}
-                          </span>
-                        </>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        {getActivityIcon(activity.activity_type)}
+                        <span className="font-medium truncate">
+                          {activity.activity_type === 'APP' ? activity.app_name :
+                           activity.activity_type === 'WEBSITE' ? activity.url_domain :
+                           activity.activity_type === 'IDLE' ? 'Idle Time' :
+                           'Break/Pause'}
+                        </span>
+                        <Badge variant="outline" className="text-xs">
+                          {formatDuration(activity.duration_seconds)}
+                        </Badge>
+                      </div>
+                      
+                      {activity.window_title && (
+                        <div className="text-sm text-muted-foreground truncate mb-1">
+                          {activity.window_title}
+                        </div>
                       )}
+                      
+                      {activity.url_path && (
+                        <div className="text-xs text-muted-foreground truncate mb-1">
+                          {activity.url_domain}{activity.url_path}
+                        </div>
+                      )}
+                      
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <span>{new Date(activity.start_time).toLocaleTimeString()}</span>
+                        {category && (
+                          <Badge 
+                            variant="secondary" 
+                            className={`text-xs ${
+                              category.productivity === 'PRODUCTIVE' ? 'bg-green-100 text-green-800' :
+                              category.productivity === 'UNPRODUCTIVE' ? 'bg-red-100 text-red-800' :
+                              'bg-yellow-100 text-yellow-800'
+                            }`}
+                          >
+                            {category.name}
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </ScrollArea>
