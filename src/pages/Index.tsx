@@ -16,6 +16,13 @@ const Index = () => {
     }
   }, [user, loading, navigate]);
 
+  // Redirect employees to time tracking page
+  useEffect(() => {
+    if (userRole === 'employee' && user) {
+      navigate('/time-tracking');
+    }
+  }, [userRole, user, navigate]);
+
   const handleAddMember = (member: { name: string; email: string; role: 'admin' | 'user' }) => {
     console.log('New member added:', member);
   };
@@ -36,7 +43,7 @@ const Index = () => {
   }
 
   // Determine view based on user role
-  const currentView = userRole === 'admin' ? 'admin' : 'user';
+  const currentView = userRole === 'admin' ? 'admin' : userRole === 'manager' ? 'manager' : 'user';
 
   return (
     <Layout 

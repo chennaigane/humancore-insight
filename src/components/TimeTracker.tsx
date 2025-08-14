@@ -1,97 +1,155 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Play, Square, Clock, TrendingUp, Activity } from 'lucide-react';
+import { Play, Pause, Square, Coffee } from 'lucide-react';
+import { useWorkSession } from '@/hooks/useWorkSession';
 import { useTimeTracking } from '@/hooks/useTimeTracking';
+import { toast } from 'sonner';
 
 const TimeTracker = () => {
-  const { isTracking, currentActivity, startTracking, stopTracking } = useTimeTracking();
+  const { currentSession, isTracking, sessionStartTime, startSession, endSession } = useWorkSession();
+  const { currentActivity, startTracking, stopTracking } = useTimeTracking();
+  const [elapsedTime, setElapsedTime] = useState('00:00:00');
+  const [isPaused, setIsPaused] = useState(false);
 
-  const handleStartProductive = () => {
-    if (isTracking) stopTracking();
+  // Update elapsed time every second
+  useEffect(() => {
+    if (!sessionStartTime || !isTracking) return;
+
+    const interval = setInterval(() => {
+      const now = new Date();
+      const elapsed = now.getTime() - sessionStartTime.getTime();
+      const hours = Math.floor(elapsed / (1000 * 60 * 60));
+      const minutes = Math.floor((elapsed % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((elapsed % (1000 * 60)) / 1000);
+      
+      setElapsedTime(
+        `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+      );
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [sessionStartTime, isTracking]);
+
+  const handleStartWork = async () => {
+    if (!currentSession) {
+      await startSession();
+    }
     startTracking('productive');
+    setIsPaused(false);
+    toast.success('Work session started');
   };
 
-  const handleStartUnproductive = () => {
-    if (isTracking) stopTracking();
-    startTracking('unproductive');
-  };
-
-  const handleStop = () => {
+  const handlePause = () => {
     stopTracking();
+    setIsPaused(true);
+    toast.info('Work session paused');
+  };
+
+  const handleResume = () => {
+    startTracking('productive');
+    setIsPaused(false);
+    toast.success('Work session resumed');
+  };
+
+  const handleBreak = () => {
+    startTracking('unproductive');
+    setIsPaused(false);
+    toast.info('Break time started');
+  };
+
+  const handleStop = async () => {
+    stopTracking();
+    await endSession();
+    setIsPaused(false);
+    toast.success('Work session ended');
   };
 
   const getStatusColor = () => {
     if (!isTracking) return 'bg-gray-500';
-    return currentActivity === 'productive' ? 'bg-green-500' : 'bg-red-500';
+    if (isPaused) return 'bg-yellow-500';
+    if (currentActivity === 'productive') return 'bg-green-500';
+    if (currentActivity === 'unproductive') return 'bg-orange-500';
+    return 'bg-gray-500';
   };
 
   const getStatusText = () => {
     if (!isTracking) return 'Offline';
-    return currentActivity === 'productive' ? 'Productive Work' : 'Unproductive Time';
+    if (isPaused) return 'Paused';
+    if (currentActivity === 'productive') return 'Working';
+    if (currentActivity === 'unproductive') return 'On Break';
+    return 'Idle';
   };
 
   return (
     <Card className="w-full max-w-md">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Clock className="h-5 w-5" />
+      <CardHeader className="text-center">
+        <CardTitle className="flex items-center justify-center gap-2">
+          <div className={`w-3 h-3 rounded-full ${getStatusColor()}`} />
           Time Tracker
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Current Status */}
-        <div className="flex items-center justify-between">
-          <span className="text-sm font-medium">Status:</span>
-          <Badge className={`${getStatusColor()} text-white`}>
+        {/* Timer Display */}
+        <div className="text-center">
+          <div className="text-4xl font-mono font-bold text-foreground mb-2">
+            {elapsedTime}
+          </div>
+          <Badge variant="outline" className="text-sm">
             {getStatusText()}
           </Badge>
         </div>
 
+        {/* Session Info */}
+        {currentSession && (
+          <div className="text-center text-sm text-muted-foreground">
+            <p>Session started: {new Date(currentSession.start_time).toLocaleTimeString()}</p>
+          </div>
+        )}
+
         {/* Control Buttons */}
-        <div className="grid grid-cols-1 gap-2">
-          <Button
-            onClick={handleStartProductive}
-            disabled={isTracking && currentActivity === 'productive'}
-            className="bg-green-600 hover:bg-green-700 text-white"
-          >
-            <TrendingUp className="h-4 w-4 mr-2" />
-            Start Productive Work
-          </Button>
-          
-          <Button
-            onClick={handleStartUnproductive}
-            disabled={isTracking && currentActivity === 'unproductive'}
-            variant="outline"
-            className="border-red-500 text-red-600 hover:bg-red-50"
-          >
-            <Activity className="h-4 w-4 mr-2" />
-            Start Break/Idle Time
-          </Button>
+        <div className="flex flex-col gap-2">
+          {!isTracking ? (
+            <Button onClick={handleStartWork} className="w-full gap-2">
+              <Play className="w-4 h-4" />
+              Start Work Session
+            </Button>
+          ) : (
+            <div className="grid grid-cols-2 gap-2">
+              {!isPaused ? (
+                <>
+                  <Button onClick={handlePause} variant="outline" className="gap-1">
+                    <Pause className="w-4 h-4" />
+                    Pause
+                  </Button>
+                  <Button onClick={handleBreak} variant="outline" className="gap-1">
+                    <Coffee className="w-4 h-4" />
+                    Break
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button onClick={handleResume} className="gap-1">
+                    <Play className="w-4 h-4" />
+                    Resume
+                  </Button>
+                  <Button onClick={handleBreak} variant="outline" className="gap-1">
+                    <Coffee className="w-4 h-4" />
+                    Break
+                  </Button>
+                </>
+              )}
+            </div>
+          )}
           
           {isTracking && (
-            <Button
-              onClick={handleStop}
-              variant="destructive"
-              className="mt-2"
-            >
-              <Square className="h-4 w-4 mr-2" />
-              Stop Tracking
+            <Button onClick={handleStop} variant="destructive" className="w-full gap-2">
+              <Square className="w-4 h-4" />
+              End Session
             </Button>
           )}
-        </div>
-
-        {/* Instructions */}
-        <div className="text-xs text-muted-foreground mt-4 p-3 bg-gray-50 rounded">
-          <p className="font-medium mb-1">How it works:</p>
-          <ul className="space-y-1">
-            <li>• Click "Start Productive Work" when actively working</li>
-            <li>• Click "Start Break/Idle Time" during breaks or idle time</li>
-            <li>• Time is automatically tracked every minute</li>
-            <li>• Reports are generated at the end of each day</li>
-          </ul>
         </div>
       </CardContent>
     </Card>
