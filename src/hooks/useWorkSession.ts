@@ -46,6 +46,8 @@ export const useWorkSession = () => {
             user_id: user.id,
             start_time: new Date().toISOString(),
             is_active: true,
+            total_active_minutes: 0,
+            total_idle_minutes: 0,
           }
         ])
         .select()
@@ -57,11 +59,12 @@ export const useWorkSession = () => {
       }
 
       if (data) {
-        setCurrentSession(data as WorkSession);
+        const session = data as unknown as WorkSession;
+        setCurrentSession(session);
         setIsTracking(true);
         setSessionStartTime(new Date());
-        console.log('Work session started:', data.id);
-        return data as WorkSession;
+        console.log('Work session started:', session.id);
+        return session;
       }
       
       return null;
@@ -119,10 +122,11 @@ export const useWorkSession = () => {
         }
 
         if (data) {
-          setCurrentSession(data as WorkSession);
+          const session = data as unknown as WorkSession;
+          setCurrentSession(session);
           setIsTracking(true);
-          setSessionStartTime(new Date(data.start_time));
-          console.log('Found active session:', data.id);
+          setSessionStartTime(new Date(session.start_time));
+          console.log('Found active session:', session.id);
         }
       } catch (error) {
         console.error('Error in getActiveSession:', error);

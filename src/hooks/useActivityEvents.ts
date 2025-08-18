@@ -54,7 +54,7 @@ export const useActivityEvents = (sessionId?: string) => {
         return;
       }
 
-      setActivities((data as ActivityEvent[]) || []);
+      setActivities((data as unknown as ActivityEvent[]) || []);
     } catch (error) {
       console.error('Error in fetchActivities:', error);
     } finally {
@@ -79,9 +79,10 @@ export const useActivityEvents = (sessionId?: string) => {
       }
 
       if (data) {
+        const newActivity = data as unknown as ActivityEvent;
         // Add to local state
-        setActivities(prev => [data as ActivityEvent, ...prev]);
-        return data as ActivityEvent;
+        setActivities(prev => [newActivity, ...prev]);
+        return newActivity;
       }
       
       return null;
